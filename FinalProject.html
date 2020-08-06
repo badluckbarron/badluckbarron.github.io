@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset=utf-8 />
+    <title>Gun Violence In Philadelphia</title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.4.0/dist/leaflet.css"
+  integrity="sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA=="
+  crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js"
+  integrity="sha512-QVftwZFqvtRNi0ZyCtsznlKSWOStnDORoefr1enyq5mVL4tmKB3S/EnC3rRJcxCPavG10IcrVGSmPh6Qw5lwrg=="
+  crossorigin=""></script>
+    
+<script src='https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/Leaflet.fullscreen.min.js'></script>
+<link href='https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/leaflet.fullscreen.css' rel='stylesheet' />
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: black;
+            font-family: Lato, sans-serif;
+            color: black;
+        }
+        header {
+            padding: 6px 10%;
+        }
+        h1 {
+            display: inline-block;
+            margin-right: 20px;
+            color: white;
+        }
+        h2 {
+            display: inline-block;
+            color: white;
+        }
+        #map {
+            width: 80%;
+            height: 540px;
+            margin: 10px auto;
+        }
+        footer {
+            padding: 6px 10%;
+            width: 80%;
+        }
+        p {
+            font-size: 1em;
+            color: white;
+        }
+        red {
+            color: firebrick;
+        }
+        yellow {
+            color: gold;
+        }
+        blue {
+            color: steelblue;
+        }
+        button{
+            color: white;
+            background-color: black;
+            border-radius: 15px;
+            font-size: 12px;
+            text-align: center;
+            align-content: center;
+            align-items: center;
+            border: 1px solid white;
+        }
+        button:hover{
+            background-color: darkgrey;
+        }
+        
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1><b><u>Philadelphia Gun Violence</b></u></h1>
+        <h2>Robberies, Assaults, and Homicides in the City</h2>
+    </header>
+
+    <div id='map'></div>
+
+    <footer>
+         <button onclick="wPhilly()">West Philly</button> <button onclick="nPhilly()">North Philly</button> <button onclick="sPhilly()">South Philly</button> <button onclick="cCity()">Center City</button> <button onclick="home()">Home</button>
+        
+        <p>Shooting Data provided by the Philadalelphia Police Department. Special thanks to Cynthia Andrews/NBC for cartographic inspirtation.</p>
+        <p> Origninal dataset has been limited to only accounts of homicides, robberies, and aggravated assaults. Other data that was excluded include rapes, hospital cases, and a category of additional victims.</p>
+        <p> Data from 1/1/2015 to 1/24/2017</p>
+         <p>Map authored by Michael Borowski</p>
+    </footer>
+
+<script src="shootings.js"></script>
+<script>
+
+       var map = L.map('map', {
+           center: [40,-75.15],
+           zoom: 11,
+           fullscreenControl: true,
+           fullscreenControlOptions: {
+               position: 'topleft'
+            }
+       });
+    
+        map.on('fullscreenchange', function () {
+            if (map.isFullscreen()) {
+                console.log('entered fullscreen');
+            } else {
+                console.log('exited fullscreen');
+            }
+        });
+
+
+      var tiles = L.tileLayer('http://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', {
+          attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions">CartoDB</a>',
+          subdomains: 'abcd',
+          maxZoom: 19
+      });  
+
+      tiles.addTo(map);
+ 
+    
+ var agAssault = L.geoJson(shootings, {
+    pointToLayer: function(feature,latlng) {
+        return L.circleMarker(latlng);
+    },
+    filter: function(feature) {
+        if(feature.properties.code >= '0400' && feature.properties.code <= '0499') {
+            return true;
+        }
+    },
+    style: function(feature) {
+        return {
+            color: 'black',
+            weight: .3,
+            fillColor: 'gold',
+            fillOpacity: .6,
+            radius: 3
+        }
+    },
+    onEachFeature : function(feature, layer) {
+
+    layer.on('mouseover',function(){
+        layer.setStyle({
+            fillColor: 'white',
+            fillOpacity: .4,
+        });
+    });
+    layer.on('mouseout', function(){
+        layer.setStyle({
+            fillColor: 'gold',
+        });
+    });      
+    layer.bindPopup("<b><yellow>Loction of Incident: </yellow>"+feature.properties.location+"<br><b><yellow> Bodily Wound: </yellow>"+feature.properties.wound+"</b>");
+}
+}).addTo(map);  
+ 
+    
+    
+    
+    
+var homicides = L.geoJson(shootings, {
+    pointToLayer: function(feature,latlng) {
+        return L.circleMarker(latlng);
+    },
+    filter: function(feature) {
+        if(feature.properties.code >= '0100' && feature.properties.code <= '0120') {
+            return true;
+        }
+    },
+    style: function(feature) {
+        return {
+            color: 'black',
+            weight: .3,
+            fillColor: 'firebrick',
+            fillOpacity: .6,
+            radius: 3
+        }
+    },
+    onEachFeature : function(feature, layer) {
+
+    layer.on('mouseover',function(){
+        layer.setStyle({
+            fillColor: 'white',
+            fillOpacity: .4,
+        });
+    });
+    layer.on('mouseout', function(){
+        layer.setStyle({
+            fillColor: 'firebrick',
+            fillOpacity: .6
+        });
+    });      
+    layer.bindPopup("<b><red>Loction of Incident: </red>"+feature.properties.location+"<br><b><red> Bodily Wound: </red>"+feature.properties.wound+"</b>");
+    }
+    }).addTo(map);
+
+    
+    
+    
+var robbery = L.geoJson(shootings, {
+    pointToLayer: function(feature,latlng) {
+        return L.circleMarker(latlng);
+    },
+    filter: function(feature) {
+        if(feature.properties.code >= '0300' && feature.properties.code <= '0399') {
+            return true;
+        }
+    },
+    style: function(feature) {
+        return {
+           color: 'black',
+            weight: .3,
+            fillColor: 'steelblue',
+            fillOpacity: .6,
+            radius: 3
+        }
+    },
+    onEachFeature : function(feature, layer) {
+
+    layer.on('mouseover',function(){
+        layer.setStyle({
+            fillColor: 'white',
+            fillOpacity: .4,
+        });
+    });
+    layer.on('mouseout', function(){
+        layer.setStyle({
+            fillColor: 'steelblue',
+            fillOpacity: .6
+        });
+    });      
+    layer.bindPopup("<b><blue>Loction of Incident: </blue>"+feature.properties.location+"<br><b><blue> Bodily Wound: </blue>"+feature.properties.wound+"</b>");
+}
+}).addTo(map);
+ 
+    
+    
+    
+    
+var sourcesLayers = {
+    "<yellow><b>Aggravated Assault</b>": agAssault,  
+    "<red><b>Homicide</b>": homicides,
+    "<blue><b>Robbery</b>" : robbery,  
+    }
+
+L.control.layers(null, sourcesLayers, { collapsed:false}).addTo(map);
+  
+function wPhilly(){
+            map.flyTo([39.9600, -75.2249], 14);
+            console.log("West Philadelphia");
+}
+function nPhilly(){
+           map.flyTo([40.0145, -75.1311], 14);
+            console.log("North Philadelphia");
+}
+function sPhilly(){
+            map.flyTo([39.9256, -75.1695], 14);
+            console.log("South Philadelphia")
+}
+function cCity(){
+            map.flyTo([39.9509, -75.1575], 14);
+            console.log("Center City")
+}
+function home(){
+            map.flyTo([40, -75.15], 11);
+        }
+        
+
+
+    
+</script>
+    
+</body>
+
+</html>
